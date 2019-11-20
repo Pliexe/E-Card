@@ -31,7 +31,7 @@ class Ecard
                 let result = Ecard.Result(this.players[0].card, this.players[1].card)
 
                 if (result === 1) {
-                    this.players[0].wins = this.players[0].card === 'slave' ? this.players[0].wins + 5 : this.players[0].wins + 1
+                    this.players[0].wins = this.players[0].card === 'slave' ? this.players[0].wins + 5 : this.players[0].wins + 1;
                     this.round++;
                     this.whoGoesFirst = this.whoGoesFirst === 1 ? 0 : 1;
                     if (this.round >= (3 * this.roundi)) {
@@ -44,7 +44,7 @@ class Ecard
                     this.players[1].cards = cards[(this.deckStart === 1 ? 0 : 1)];
                     if (this.round >= this.rounds) return this.players;
                 } else if (result === 0) {
-                    this.players[1].wins = this.players[1].card === 'slave' ? this.players[1].wins + 5 : this.players[1].wins + 1
+                    this.players[1].wins = this.players[1].card === 'slave' ? this.players[1].wins + 5 : this.players[1].wins + 1;
                     this.round++;
                     this.whoGoesFirst = this.whoGoesFirst === 1 ? 0 : 1;
                     if (this.round >= (3 * this.roundi)) {
