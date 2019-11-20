@@ -1,48 +1,82 @@
-const shortid = require('shortid');
+const cards = [['citizen', 'citizen', 'citizen', 'citizen', 'slave'], ['citizen', 'citizen', 'citizen', 'citizen', 'emperor']];
 
-module.exports = class Ecard
+class Ecard
 {
-    /**
-     * 
-     * @param {String} options.player1ID - ID for player 1
-     * @param {String} options.player2ID - ID for player 2
-     * @param {Number} options.rounds - Set the amount of rounds for the whole game
-     */
-
     constructor(options)
     {
         options = options || [];
 
-        player1id = options.player1ID || shortid.generate();
-        player2id = options.player2ID || shortid.generate();
-        this.rounds = options.rounds || 12;
-        this.rounds = isNaN(this.rounds) ? 12 : this.rounds;
+        this.players = [new Player(options.player1id || 'player1'), new Player(options.player2id || 'player2')];
+        this.rounds = options.rounds || 6;
 
-        this.player1 = new Player(player1ID);
-        this.player2 = new Player(player2ID);
-
-        this.round = 0; // Set round number to 0
+        this.deckStart = options.deckStart || Math.floor(Math.random() * 2);
+        this.players[0].cards = cards[this.deckStart];
+        this.players[1].cards = cards[(this.deckStart === 1 ? 0 : 1)];
+        this.whoGoesFirst = Math.floor(Math.random() * 2);
+        this.round = 0;
+        this.roudi = 1;
     }
 
-    startRound()
+    putCard(card)
     {
-        let game = new Game(this.player1, this.player2);
-        this.round++;
+        if (!this.players[0].card) {
+            if (!this.players[0].cards.includes(card)) throw new Error("You may not play a card that you don't have!");
+            this.players[0].card = card;
+        }
+        else
+            if (!this.players[1].card) {
+                if (!this.players[1].cards.includes(card)) throw new Error("You may not play a card that you don't have!");
+                this.players[1].card = card;
+
+                let result = Ecard.Result(this.players[0].card, this.players[1].card)
+
+                if (result === 1) {
+                    this.players[0].wins = this.players[0].card === 'slave' ? this.players[0].wins + 5 : this.players[0].wins + 1
+                    this.round++;
+                    this.whoGoesFirst = this.whoGoesFirst === 1 ? 0 : 1;
+                    if (this.round >= (3 * this.roundi)) {
+                        this.deckStart = this.deckStart === 1 ? 0 : 1;
+                        this.roundi++;
+                    }
+                    delete this.players[0].card;
+                    delete this.players[1].card;
+                    this.players[0].cards = cards[this.deckStart];
+                    this.players[1].cards = cards[(this.deckStart === 1 ? 0 : 1)];
+                    if (this.round >= this.rounds) return this.players;
+                } else if (result === 0) {
+                    this.players[1].wins = this.players[1].card === 'slave' ? this.players[1].wins + 5 : this.players[1].wins + 1
+                    this.round++;
+                    this.whoGoesFirst = this.whoGoesFirst === 1 ? 0 : 1;
+                    if (this.round >= (3 * this.roundi)) {
+                        this.deckStart = this.deckStart === 1 ? 0 : 1;
+                        this.roundi++;
+                    }
+                    delete this.players[0].card;
+                    delete this.players[1].card;
+                    this.players[0].cards = cards[this.deckStart];
+                    this.players[1].cards = cards[(this.deckStart === 1 ? 0 : 1)];
+                    if (this.round >= this.rounds) return this.players;
+                } else {
+                    this.players[0].cards = this.players[0].cards.filter(c => c != this.players[0].card);
+                    this.players[1].cards = this.players[1].cards.filter(c => c != this.players[1].card);
+                    delete this.players[0].card;
+                    delete this.players[1].card;
+                }
+            }
     }
-}
 
-class Game
-{
-    constructor(player1, player2)
+    static Result(card1, card2)
     {
-        this.cards1 = ['citizen', 'citizen', 'citizen', 'citizen', 'slave'];
-        this.cards2 = ['citizen', 'citizen', 'citizen', 'citizen', 'emperor'];
-
-        this.startRound((Math.floor(Math.random() * 2) == 0) ? this.player1 : this.player2);
-    }
-
-    startRound(player)
-    {
+        switch (card1) {
+            case 'citizen':
+                return card2 === 'slave' ? 1 : 0;
+            case 'slave':
+                return card2 === 'emperor' ? 1 : 0;
+            case 'citizen':
+                return card2 === 'slave' ? 1 : 0;
+            default:
+                return 2;
+        }
     }
 }
 
@@ -51,6 +85,9 @@ class Player
     constructor(id)
     {
         this.id = id;
+        this.deck = [];
         this.wins = 0;
     }
 }
+
+module.exports = Ecard;
